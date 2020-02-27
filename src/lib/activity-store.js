@@ -28,13 +28,13 @@ class ActivityStore {
     }
   }
 
-  async update(publisherKey, activity) {
+  async update(publisherKey, activity, extraData) {
     try {
       console.log(`Adding into ES ${activity.data.name}`);
       await this.client.index({
         index: this.esIndex,
         id: publisherKey + "-" + activity.id,
-        body: activity.data,
+        body: Object.assign({ data: activity.data, kind: activity.kind, publisher: publisherKey, api_id: activity.id }, extraData),
         refresh: 'wait_for',
       });
     } catch (e) {
@@ -96,7 +96,25 @@ class ActivityStore {
         console.log(`Creating index ${this.esIndex}`);
         const esIndexCreateQ = await this.client.indices.create({
           index: this.esIndex,
-          /* body: { "settings": {}, "mappings": {} } */
+          body: {
+            "settings": {},
+            "mappings": {
+              "properties": {
+                "api_id": {
+                  "type": "keyword"
+                },
+                "data": {
+                  "type": "object"
+                },
+                "kind": {
+                  "type": "keyword"
+                },
+                "publisher": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
         });
 
         if (esIndexCreateQ.error) {

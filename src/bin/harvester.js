@@ -48,9 +48,9 @@ const activityStore = new ActivityStore(esIndex, esHarvesterStateIndex);
 
             if (activityItem.state == 'updated'){
 
-              const pipeLine = new PipeLine(activityItem, async (augmentedActivity) => {
+              const pipeLine = new PipeLine(activityItem, async (item, extraData) => {
                 /* Pipeline callback */
-                await activityStore.update(publisherKey, augmentedActivity);
+                await activityStore.update(publisherKey, activityItem, extraData);
               });
 
               pipeLine.run();
